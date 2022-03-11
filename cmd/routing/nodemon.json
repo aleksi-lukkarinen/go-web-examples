@@ -1,0 +1,10 @@
+{
+  "restartable": "rs",
+  "verbose": true,
+  "exec": "go run . -env ..\\..\\.env",
+  "watch": [
+    "../../.env",
+    "."
+  ],
+  "ext": "go"
+}
