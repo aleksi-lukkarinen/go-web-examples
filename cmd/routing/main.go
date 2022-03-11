@@ -54,7 +54,7 @@ func printWelcomeMessages() {
 }
 
 func initLogging() {
-
+	log.SetPrefix("Test server: ")
 }
 
 func parseCommandlineArguments() (cmdlineArgs, error) {
