@@ -69,8 +69,12 @@ func parseCommandlineArguments() (cmdlineArgs, error) {
 
 	args.envFilePath = ""
 	if len(*envFilePathPtr) > 0 {
-		args.envFilePath =
-			filepath.FromSlash(strings.TrimSpace(*envFilePathPtr))
+		p, err := filepath.Abs(strings.TrimSpace(*envFilePathPtr))
+		if err != nil {
+			p = filepath.FromSlash(strings.TrimSpace(*envFilePathPtr))
+		}
+
+		args.envFilePath = p
 	}
 
 	return args, nil
