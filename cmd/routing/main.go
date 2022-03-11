@@ -1,14 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"go-web-examples/internal/cmdline"
 	"go-web-examples/internal/common"
 	"go-web-examples/internal/environment"
 	"log"
 	"net/http"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -18,7 +16,7 @@ func main() {
 	printWelcomeMessages()
 	initLogging()
 
-	args, err := parseCommandlineArguments()
+	args, err := cmdline.Parse()
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -40,29 +38,6 @@ func printWelcomeMessages() {
 
 func initLogging() {
 	log.SetPrefix("Test server: ")
-}
-
-func parseCommandlineArguments() (common.CmdlineArgs, error) {
-	args := common.CmdlineArgs{}
-
-	envFilePathPtr := flag.String(
-		"env",
-		"",
-		"A path to a .env file that sets environment variables")
-
-	flag.Parse()
-
-	args.EnvFilePath = ""
-	if len(*envFilePathPtr) > 0 {
-		p, err := filepath.Abs(strings.TrimSpace(*envFilePathPtr))
-		if err != nil {
-			p = filepath.FromSlash(strings.TrimSpace(*envFilePathPtr))
-		}
-
-		args.EnvFilePath = p
-	}
-
-	return args, nil
 }
 
 func bootstrapServer(e *common.RuntimeEnv) {
