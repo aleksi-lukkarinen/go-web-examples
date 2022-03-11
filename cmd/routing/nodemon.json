@@ -4,6 +4,7 @@
   "exec": "go run . -env ..\\..\\.env",
   "watch": [
     "../../.env",
+    "../../internal",
     "."
   ],
   "ext": "go"
