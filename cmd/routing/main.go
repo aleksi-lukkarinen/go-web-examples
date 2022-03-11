@@ -4,28 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"go-web-examples/internal/common"
+	"go-web-examples/internal/environment"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
-
-type cmdlineArgs struct {
-	envFilePath string
-}
-
-type runtimeEnv struct {
-	workingDirectory     string
-	staticFilesLocalPath string
-	serverIP             string
-	serverPort           string
-}
 
 func main() {
 	printWelcomeMessages()
@@ -37,13 +24,11 @@ func main() {
 		return
 	}
 
-	env, err := initEnvironment(args)
+	env, err := environment.Init(args)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-
-	printEnvironment(env)
 
 	bootstrapServer(env)
 }
@@ -57,8 +42,8 @@ func initLogging() {
 	log.SetPrefix("Test server: ")
 }
 
-func parseCommandlineArguments() (cmdlineArgs, error) {
-	args := cmdlineArgs{}
+func parseCommandlineArguments() (common.CmdlineArgs, error) {
+	args := common.CmdlineArgs{}
 
 	envFilePathPtr := flag.String(
 		"env",
@@ -67,80 +52,27 @@ func parseCommandlineArguments() (cmdlineArgs, error) {
 
 	flag.Parse()
 
-	args.envFilePath = ""
+	args.EnvFilePath = ""
 	if len(*envFilePathPtr) > 0 {
 		p, err := filepath.Abs(strings.TrimSpace(*envFilePathPtr))
 		if err != nil {
 			p = filepath.FromSlash(strings.TrimSpace(*envFilePathPtr))
 		}
 
-		args.envFilePath = p
+		args.EnvFilePath = p
 	}
 
 	return args, nil
 }
 
-func initEnvironment(args cmdlineArgs) (*runtimeEnv, error) {
-	if len(args.envFilePath) > 0 {
-		fmt.Printf("Using environment file at: %s\n", args.envFilePath)
-
-		err := godotenv.Load(args.envFilePath)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	env := runtimeEnv{}
-
-	path, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	env.workingDirectory = path
-
-	strVal, defined := os.LookupEnv(common.SERVER_PORT_ENV_VAR_NAME)
-	if !defined {
-		strVal = common.SERVER_DEFAULT_PORT
-	}
-	intVal, err := strconv.ParseUint(
-		strVal, common.BASE_TEN, common.UINT_16_SIZE)
-	if err != nil {
-		return nil, err
-	}
-	env.serverPort = strconv.FormatUint(intVal, common.BASE_TEN)
-
-	strVal, defined = os.LookupEnv(common.SERVER_IP_ENV_VAR_NAME)
-	if !defined {
-		strVal = common.SERVER_DEFAULT_IP
-	}
-	env.serverIP = strings.TrimSpace(strVal)
-
-	strVal, defined = os.LookupEnv(common.STATIC_FILES_PATH_ENV_VAR_NAME)
-	if !defined {
-		strVal = common.STATIC_FILES_DEFAULT_PATH
-	}
-	env.staticFilesLocalPath = strings.TrimSpace(strVal)
-
-	return &env, nil
-}
-
-func printEnvironment(e *runtimeEnv) {
-	fmt.Printf("\n")
-	fmt.Printf("Current working directory: %s\n", e.workingDirectory)
-	fmt.Printf("Local path to static files: %s\n", e.staticFilesLocalPath)
-	fmt.Printf("\n")
-	fmt.Printf("Server IP: %s\n", e.serverIP)
-	fmt.Printf("Server port: %s\n", e.serverPort)
-}
-
-func bootstrapServer(e *runtimeEnv) {
+func bootstrapServer(e *common.RuntimeEnv) {
 	router := mux.NewRouter()
 
 	setupRoutes(router, e)
 	startServer(router, e)
 }
 
-func setupRoutes(router *mux.Router, e *runtimeEnv) {
+func setupRoutes(router *mux.Router, e *common.RuntimeEnv) {
 	router.HandleFunc("/book/{title}/page/{page}",
 		func(w http.ResponseWriter, r *http.Request) {
 			vars := mux.Vars(r)
@@ -152,7 +84,7 @@ func setupRoutes(router *mux.Router, e *runtimeEnv) {
 	)
 
 	staticUrl := "/static/"
-	staticServer := http.FileServer(http.Dir(e.staticFilesLocalPath))
+	staticServer := http.FileServer(http.Dir(e.StaticFilesLocalPath))
 	handler := http.StripPrefix(staticUrl, staticServer)
 	router.PathPrefix(staticUrl).Handler(handler)
 
@@ -167,10 +99,9 @@ func setupRoutes(router *mux.Router, e *runtimeEnv) {
 
 		fmt.Fprintf(w, defaultResponse, time.Now().String())
 	})
-
 }
 
-func startServer(router *mux.Router, e *runtimeEnv) {
-	address := fmt.Sprintf("%s:%s", e.serverIP, e.serverPort)
+func startServer(router *mux.Router, e *common.RuntimeEnv) {
+	address := fmt.Sprintf("%s:%s", e.ServerIP, e.ServerPort)
 	log.Fatal(http.ListenAndServe(address, router))
 }

@@ -11,3 +11,14 @@ const SERVER_DEFAULT_IP = "127.0.0.1"
 
 const SERVER_PORT_ENV_VAR_NAME = "TESTSERVER_PORT"
 const SERVER_DEFAULT_PORT = "8000"
+
+type CmdlineArgs struct {
+	EnvFilePath string
+}
+
+type RuntimeEnv struct {
+	WorkingDirectory     string
+	StaticFilesLocalPath string
+	ServerIP             string
+	ServerPort           string
+}
