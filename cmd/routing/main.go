@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 
-	env, err := environment.Init(args)
+	env, err := environment.Parse(args)
 	if err != nil {
 		log.Fatal(err)
 		return

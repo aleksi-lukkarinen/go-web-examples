@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Init(args common.CmdlineArgs) (*common.RuntimeEnv, error) {
+func Parse(args common.CmdlineArgs) (*common.RuntimeEnv, error) {
 	err := readEnvFile(args)
 	if err != nil {
 		return nil, err
