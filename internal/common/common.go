@@ -3,6 +3,8 @@ package common
 const BASE_TEN = 10
 const UINT_16_SIZE = 16
 
+const URL_PART_STATIC = "/static/"
+
 const STATIC_FILES_PATH_ENV_VAR_NAME = "TESTSERVER_STATICFILES_PATH"
 const STATIC_FILES_DEFAULT_PATH = "./web/static"
 

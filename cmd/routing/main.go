@@ -58,10 +58,9 @@ func setupRoutes(router *mux.Router, e *common.RuntimeEnv) {
 		},
 	)
 
-	staticUrl := "/static/"
 	staticServer := http.FileServer(http.Dir(e.StaticFilesLocalPath))
-	handler := http.StripPrefix(staticUrl, staticServer)
-	router.PathPrefix(staticUrl).Handler(handler)
+	handler := http.StripPrefix(common.URL_PART_STATIC, staticServer)
+	router.PathPrefix(common.URL_PART_STATIC).Handler(handler)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		const defaultResponse = `<!DOCTYPE html>
