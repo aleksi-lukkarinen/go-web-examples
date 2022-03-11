@@ -23,6 +23,7 @@ type cmdlineArgs struct {
 type runtimeEnv struct {
 	workingDirectory     string
 	staticFilesLocalPath string
+	serverIP             string
 	serverPort           string
 }
 
@@ -104,6 +105,12 @@ func initEnvironment(args cmdlineArgs) (*runtimeEnv, error) {
 	}
 	env.serverPort = strconv.FormatUint(intVal, common.BASE_TEN)
 
+	strVal, defined = os.LookupEnv(common.SERVER_IP_ENV_VAR_NAME)
+	if !defined {
+		strVal = common.SERVER_DEFAULT_IP
+	}
+	env.serverIP = strings.TrimSpace(strVal)
+
 	strVal, defined = os.LookupEnv(common.STATIC_FILES_PATH_ENV_VAR_NAME)
 	if !defined {
 		strVal = common.STATIC_FILES_DEFAULT_PATH
@@ -114,10 +121,12 @@ func initEnvironment(args cmdlineArgs) (*runtimeEnv, error) {
 }
 
 func printEnvironment(e *runtimeEnv) {
-	fmt.Printf("Server port: %s\n", e.serverPort)
 	fmt.Printf("\n")
 	fmt.Printf("Current working directory: %s\n", e.workingDirectory)
 	fmt.Printf("Local path to static files: %s\n", e.staticFilesLocalPath)
+	fmt.Printf("\n")
+	fmt.Printf("Server IP: %s\n", e.serverIP)
+	fmt.Printf("Server port: %s\n", e.serverPort)
 }
 
 func bootstrapServer(e *runtimeEnv) {
@@ -158,5 +167,6 @@ func setupRoutes(router *mux.Router, e *runtimeEnv) {
 }
 
 func startServer(router *mux.Router, e *runtimeEnv) {
-	log.Fatal(http.ListenAndServe(":"+e.serverPort, router))
+	address := fmt.Sprintf("%s:%s", e.serverIP, e.serverPort)
+	log.Fatal(http.ListenAndServe(address, router))
 }
